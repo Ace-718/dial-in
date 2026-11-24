@@ -55,13 +55,52 @@ window.GRINDERS = [
   {
     id: "mazzer",
     brand: "mazzer",
-    match: ["super jolly", "major", "robur"],
-    name: "Mazzer Super Jolly / Major / Robur",
-    short: "Mazzer",
+    match: ["super jolly"],
+    name: "Mazzer Super Jolly",
+    short: "Super Jolly",
     cues: "Tall hopper, thick stepped collar with a pin, doser or short spout.",
     adjust: "Pull the pin and turn the collar. Each notch is one step; note which notch you are on.",
     step: "one notch",
     program: ["These are timed by a separate timer or by hand — weigh the dose and adjust the timer to match."]
+  },
+  {
+    id: "mazzer-v",
+    brand: "mazzer",
+    match: ["major v", "robur s", "kony s", "major", "robur", "kony"],
+    name: "Mazzer Major V / Robur S / Kony S",
+    short: "Mazzer Major V",
+    cues: "Push-button display on the front, numbered ring on the adjustment disk, disk stopping pin on the side.",
+    adjust: "Loosen the disk stopping pin, then turn the adjustment disk COUNTERCLOCKWISE to go finer and clockwise to go coarser. The grinder must be running while you turn it, or the burrs jam.",
+    step: "one number on the ring",
+    // From the Mazzer Major V / Robur S / Kony S quick start guide.
+    manual: {
+      source: "Mazzer Major V, Robur S, Kony S quick start guide",
+      adjust: [
+        "Loosen the disk stopping pin on the side.",
+        "Start the grinder BEFORE you move the disk, or the burrs jam.",
+        "Counterclockwise = finer. Clockwise = coarser.",
+        "Stop grinding, then tighten the pin.",
+        "If the pin bottoms out, pull it, adjust, and reinsert it in another hole."
+      ],
+      purge: "The grounds left in the chute are still the old setting, so the first shot after a change lies to you.",
+      quick: {
+        dose: "Hold the menu button, press the dose button, release both. Set the time with the navigation buttons, then press the menu button to save."
+      },
+      zero: [
+        "Switch the grinder off.",
+        "Close the hopper gate, lift the hopper off.",
+        "Remove the disk stopping pin, loosen the two ring setscrews.",
+        "Turn the ring so 0 sits where you want it, tighten the setscrews.",
+        "Reassemble. From the factory, 0 is where the burrs touch."
+      ],
+      dose: [
+        "Hold the menu button, press the dose button, release both.",
+        "Set the time with the navigation buttons.",
+        "Press and release the menu button to save."
+      ],
+      mode: "On the Major V and Kony S you can switch from Keyboard to Portafilter mode: press the menu button, then press the activation pin switch. In Portafilter mode you pick the dose first, then press the portafilter into the pin to grind.",
+      flow: "The grinder ships with the Hybrid grind flow control wire fitted, which is right for almost everything. If you get clumps, swap in the Anti-Clumping wire; for static, the Anti-Dust wire. Both come in the small box with the grinder."
+    }
   },
   {
     id: "eureka",
@@ -144,14 +183,68 @@ window.MACHINES = [
   {
     id: "strada",
     brand: "la marzocco",
-    match: ["strada", "linea pb"],
-    name: "La Marzocco Strada / Linea PB",
+    match: ["strada"],
+    name: "La Marzocco Strada",
     short: "Strada",
     cues: "Multi-group, paddle with pressure profiling, scales on the tray.",
     warmup: "30 minutes for a multi-group.",
     pressure: "9 bar; the profiling paddles can go lower.",
     temp: "Group display, set per group.",
     notes: "Keep the profile flat while dialing in — do not change two things at once."
+  },
+  {
+    id: "linea-pb",
+    brand: "la marzocco",
+    match: ["linea pb", "pb"],
+    name: "La Marzocco Linea PB",
+    short: "Linea PB",
+    cues: "Multi-group, flat front panel, T1/T2/T3 buttons on the left group, scale grid on the tray.",
+    warmup: "About 25 minutes to working pressure. The display shows CB and SB filling as rectangles.",
+    pressure: "9 bar at the group while brewing. Adjust the pump screw: clockwise raises it, counterclockwise lowers it.",
+    temp: "Set per group in Barista programming. Left number is the group now, right is the target.",
+    notes: "The left group is the one you program from — T1, T2 and T3 only work there.",
+    // Everything below is taken from the Linea PB manual (MAN.10.1.03, v4.1).
+    manual: {
+      source: "Linea PB manual, software guide p.35–46",
+      models: "AV (volumetric), ABR (scale), MP (paddle). The button steps below are for AV and ABR.",
+      open: [
+        "With the machine on, press and hold T3 on the left group for about 5 seconds.",
+        "The display reads Program / Dose / Press Enter To Exit. That is the Barista level.",
+        "To leave at any time, press T2 and T3 together."
+      ],
+      temp: [
+        "In Barista programming, T1 and T2 to Coffee Boiler Settings, press T3.",
+        "T3 on Coffee Boiler 1, choose ENABLED, T3.",
+        "At CB1 Temperature set it with T1 and T2, then T3 to confirm.",
+        "Left number is the group now, right is the target.",
+        "Exit, then T2 and T3 together to leave."
+      ],
+      dose: [
+        "Hold T3 for 5 s to open Barista programming.",
+        "T3 on Group Dose Settings, then T3 on Program Volume Dose.",
+        "Short dose: tap the button to start, tap again to stop. It lights when saved.",
+        "Long dose: hold the button 2 s, then release to store.",
+        "Group 1's doses copy to the other groups unless you set them separately."
+      ],
+      scale: [
+        "ABR model: hold T2 for 5 s with the machine on.",
+        "When the numbers stop flashing, put the EMPTY portafilter on the grid. It records itself.",
+        "Hold T1 for 5 s, wait for COF, then put the FILLED portafilter on the grid.",
+        "The machine now knows dry and wet weight, so it can stop on grams.",
+        "Turn it on: Barista programming, Group Dose Settings, Group 1 Mode, pick MASS or BREWRATIO.",
+        "PULSES = volume, MASS = grams, BREWRATIO = a set ratio of coffee in to drink out."
+      ],
+      preinfusion: [
+        "In Barista programming, reach Pre-Inf Settings and press T3.",
+        "Pick the group with T1 and T2, press T3.",
+        "First value is wet seconds (valve open), second is hold seconds (valve closed).",
+        "A short wet of 2–3 s with a 2 s hold softens the start of the shot."
+      ],
+      scaleCare: "The built-in scale reads to ±0.5 g and takes at most 1 kg. Keep the grid dry and clean, and do not lean on it — vibration from the next group throws the reading off.",
+      quick: {
+        scale: "It can stop the shot on grams instead of seconds. Hold T2 for 5 s with the machine on, then put the empty portafilter on the grid when the numbers stop flashing. Hold T1 for 5 s and put the filled one on. Full steps below."
+      }
+    }
   },
   {
     id: "appia",

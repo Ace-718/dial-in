@@ -186,10 +186,30 @@
       { n: 4, title: "Pull and weigh", body: "Time the shot and weigh the cup. The card wants " + band(recipe.time) + " s and " + band(recipe.yield) + " g out." },
       { n: 5, title: "Taste, then change one thing", body: "Sour means finer, bitter means coarser. Change the grind only, then pull again." }
     ];
-    if (g && g.program) {
-      steps.push({ n: 6, title: "Program the grinder dose", body: g.program.join(" ") });
+
+    // The Mazzer manual is blunt about this one: grounds left in the chute are the
+    // old setting, so a shot pulled straight after a change lies to you.
+    var purge = g && g.manual && g.manual.purge;
+    if (purge) {
+      steps.splice(4, 0, { n: 5, title: "Purge two doses", body: purge });
     }
-    return steps;
+
+    // Grinder dose programming: the one-liner if the manual has one, else the list.
+    var quickDose = g && g.manual && g.manual.quick && g.manual.quick.dose;
+    var program = quickDose || (g && g.program && g.program.join(" "));
+    if (program) {
+      steps.push({ n: steps.length + 1, title: "Set the grinder dose time", body: program });
+    }
+
+    // A machine that can stop a shot on weight beats timing it by hand.
+    var quickScale = machine && machine.manual && machine.manual.quick && machine.manual.quick.scale;
+    if (quickScale) {
+      steps.push({ n: steps.length + 1, title: "Let the machine weigh it (optional)", body: quickScale });
+    }
+
+    return steps.map(function (s, i) {
+      return { n: i + 1, title: s.title, body: s.body };
+    });
   }
 
   var api = { diagnose: diagnose, walkthrough: walkthrough, band: band, mid: mid, fmt: fmt };

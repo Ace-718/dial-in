@@ -23,6 +23,7 @@
   }
   *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
   html,body{margin:0}
+  html{scroll-padding-top:70px}
   body{
     background:radial-gradient(120% 60% at 50% -10%, rgba(200,138,88,.13), transparent 60%), var(--bg);
     color:var(--text);
@@ -195,7 +196,7 @@
   @keyframes spin{to{transform:rotate(360deg)}}
 
   /* steps */
-  .step{display:flex; gap:12px; padding:12px 0; border-bottom:1px solid var(--line)}
+  .step{display:flex; gap:12px; padding:12px 0; border-bottom:1px solid var(--line); scroll-margin-top:70px}
   .step:last-child{border-bottom:0}
   .step .n{
     flex:none; width:23px; height:23px; border-radius:50%; display:grid; place-items:center;
@@ -205,6 +206,28 @@
   .step .body{min-width:0}
   .step .body h3{font-size:14.5px; margin:0 0 3px; font-weight:500}
   .step .body p{margin:0; font-size:13.5px; color:var(--muted); line-height:1.5}
+
+  /* manual sections */
+  .man{margin-top:22px; padding-top:18px; border-top:1px solid var(--line); scroll-margin-top:70px}
+  .man h3{font-size:14px; margin:0 0 2px; font-weight:500; letter-spacing:.01em}
+  .man .src{font-size:11.5px; color:var(--dim); margin:0 0 10px; font-family:"JetBrains Mono",monospace}
+  .man ol{margin:0 0 14px; padding-left:19px}
+  .man ol li{font-size:13.5px; color:var(--muted); line-height:1.55; margin-bottom:7px}
+  .man ol li:last-child{margin-bottom:0}
+  .man p.note{font-size:13.5px; color:var(--muted); line-height:1.55; margin:0 0 14px}
+  .man .acc{border-bottom:1px solid var(--line)}
+  .man .acc:last-of-type{border-bottom:0}
+  .man summary{
+    list-style:none; cursor:pointer; padding:13px 0; font-size:14.5px; font-weight:500;
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+  }
+  .man summary::-webkit-details-marker{display:none}
+  .man summary::after{
+    content:"+"; font-family:"JetBrains Mono",monospace; color:var(--accent); font-size:16px;
+    flex:none; transition:transform .18s ease;
+  }
+  .man details[open] summary::after{transform:rotate(45deg)}
+  .man details > ol, .man details > p{margin-top:2px}
 
   nav{
     position:fixed; left:0; right:0; bottom:0; z-index:30;
@@ -537,10 +560,14 @@
     box.innerHTML = '<p class="eyebrow">What you are using</p>' +
       (m ? '<div class="found" style="margin-bottom:10px"><p class="nm">' + esc(m.name) + '</p>' +
         '<span class="cf">Espresso machine</span>' +
-        '<p class="why">' + esc(m.warmup) + ' ' + esc(m.notes) + '</p></div>' : '') +
+        '<p class="why">' + esc(m.warmup) + ' ' + esc(m.notes) + '</p>' +
+        (m.manual ? '<p class="hint" style="margin-top:8px; color:var(--accent)">Button steps from the manual are in the Steps tab.</p>' : '') +
+        '</div>' : '') +
       (g ? '<div class="found" style="margin-bottom:10px"><p class="nm">' + esc(g.name) + '</p>' +
         '<span class="cf">Grinder</span>' +
-        '<p class="why">' + esc(g.adjust) + '</p></div>' : '') +
+        '<p class="why">' + esc(g.adjust) + '</p>' +
+        (g.manual ? '<p class="hint" style="margin-top:8px; color:var(--accent)">Button steps from the manual are in the Steps tab.</p>' : '') +
+        '</div>' : '') +
       '<div class="found"><p class="nm">' + esc(recipe().name) + '</p>' +
         '<span class="cf">On the bar now</span>' +
         '<p class="why">' + esc(recipe().note) + '</p></div>' +
@@ -688,7 +715,49 @@
       }).join("") +
       '<div class="next" style="margin-top:16px"><div class="lbl">Target on the card</div>' +
         '<div class="val">' + window.Dial.band(b.dose) + ' g in → ' + window.Dial.band(b.yield) + ' g out in ' +
-        window.Dial.band(b.time) + ' s</div></div>';
+        window.Dial.band(b.time) + ' s</div></div>' +
+      renderManual(m, g);
+  }
+
+  /* The exact button sequences from the manuals, folded away so the steps stay
+     short. Only appears for equipment whose manual is built in. */
+  var MANUAL_TITLES = {
+    open: "Open programming",
+    adjust: "Change the grind",
+    purge: "Purge after a change",
+    zero: "Set the zero point",
+    temp: "Set brew temperature",
+    dose: "Set the dose",
+    scale: "Weigh shots on the machine",
+    preinfusion: "Set pre-infusion",
+    mode: "Keyboard or portafilter mode",
+    flow: "Grind flow wire"
+  };
+
+  function manualBlock(title, man){
+    if(!man) return "";
+    var parts = Object.keys(man).filter(function(k){
+      return MANUAL_TITLES[k] && man[k];
+    }).map(function(k){
+      var v = man[k];
+      var body = Array.isArray(v)
+        ? '<ol>' + v.map(function(li){ return '<li>' + esc(li) + '</li>'; }).join("") + '</ol>'
+        : '<p class="note">' + esc(v) + '</p>';
+      return '<details><summary>' + esc(MANUAL_TITLES[k]) + '</summary>' + body + '</details>';
+    });
+    if(man.scaleCare){
+      parts.push('<details><summary>Looking after the scale</summary><p class="note">' + esc(man.scaleCare) + '</p></details>');
+    }
+    if(!parts.length) return "";
+    return '<div class="man">' +
+      '<h3>' + esc(title) + '</h3>' +
+      '<p class="src">' + esc(man.source || "") + (man.models ? ' · ' + esc(man.models) : '') + '</p>' +
+      parts.join("") + '</div>';
+  }
+
+  function renderManual(m, g){
+    return (m && m.manual ? manualBlock(m.name, m.manual) : "") +
+           (g && g.manual ? manualBlock(g.name, g.manual) : "");
   }
 
   /* ---------- recipes ---------- */
