@@ -1,0 +1,485 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Dial-In — Linea PB + Mazzer</title>
+<meta name="description" content="Pick the beans and the roast date. Get the card's numbers and a step-by-step checklist for the Linea PB and the Mazzer.">
+<meta name="theme-color" content="#14100E">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Dial-In">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%2314100E'/%3E%3Cpath d='M8 11h11a4 4 0 0 1 0 8h-1v1a4 4 0 0 1-4 4h-1a4 4 0 0 1-4-4V11z' fill='%23C88A58'/%3E%3Cpath d='M20 13h1.5a3 3 0 0 1 0 6H20' stroke='%23C88A58' stroke-width='2' fill='none'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,600;1,500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#14100E; --surface:#1C1613; --surface2:#241C18; --field:#120E0C;
+    --line:rgba(200,138,88,.16); --line2:rgba(200,138,88,.34);
+    --text:#F4EDE4; --muted:#A2927F; --dim:#7A6D5F;
+    --accent:#C88A58;
+    --good:#8BAB8F; --grind:#D79B5C; --fix:#C27258;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+  html,body{margin:0}
+  body{
+    background:radial-gradient(120% 60% at 50% -10%, rgba(200,138,88,.13), transparent 60%), var(--bg);
+    color:var(--text);
+    font-family:Outfit,system-ui,-apple-system,sans-serif;
+    line-height:1.45; min-height:100dvh;
+    padding-bottom:calc(26px + env(safe-area-inset-bottom));
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:560px; margin:0 auto; padding:0 16px}
+  header{
+    position:sticky; top:0; z-index:20;
+    backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
+    background:rgba(20,16,14,.88);
+    border-bottom:1px solid var(--line);
+    padding:calc(10px + env(safe-area-inset-top)) 0 10px;
+  }
+  .bar{display:flex; align-items:center; justify-content:space-between; gap:12px}
+  .wordmark{font-family:"Playfair Display",Georgia,serif; font-weight:600; font-size:22px; display:flex; align-items:baseline; gap:8px}
+  .wordmark span{font-family:Outfit,sans-serif; font-size:10px; font-weight:500; letter-spacing:.15em; text-transform:uppercase; color:var(--accent)}
+  .kit{
+    font-family:"JetBrains Mono",monospace; font-size:10.5px; color:var(--dim);
+    text-align:right; line-height:1.4;
+  }
+  main{padding:16px 0 8px}
+  .card{
+    background:linear-gradient(180deg,var(--surface2),var(--surface));
+    border:1px solid var(--line); border-radius:18px;
+    padding:18px; margin-bottom:14px;
+  }
+  .eyebrow{font-size:10.5px; letter-spacing:.18em; text-transform:uppercase; color:var(--muted); font-weight:500; margin:0 0 12px}
+  h2{font-family:"Playfair Display",Georgia,serif; font-weight:600; font-size:20px; margin:0 0 4px}
+  .hint{color:var(--muted); font-size:13.5px; margin:0}
+  label{display:block; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); margin-bottom:6px}
+  input{
+    width:100%; font-family:inherit; font-size:16px; color:var(--text);
+    background:var(--field); border:1px solid var(--line); border-radius:12px;
+    padding:11px 12px; outline:none; appearance:none;
+  }
+  input:focus{border-color:var(--accent); box-shadow:0 0 0 3px rgba(200,138,88,.14)}
+  input::placeholder{color:#4E453B}
+  input::-webkit-calendar-picker-indicator{filter:invert(.7) sepia(.3) saturate(2); cursor:pointer}
+
+  /* bean picker */
+  .beans{display:grid; grid-template-columns:1fr 1fr; gap:9px; margin-bottom:14px}
+  .bean{
+    font-family:inherit; text-align:left; cursor:pointer; padding:12px 13px;
+    border:1px solid var(--line); border-radius:13px; background:var(--field); color:var(--muted);
+  }
+  .bean .nm{display:block; font-size:14.5px; font-weight:500; color:var(--text); margin-bottom:2px; line-height:1.25}
+  .bean .kd{font-size:10px; letter-spacing:.12em; text-transform:uppercase}
+  .bean[aria-pressed=true]{border-color:var(--accent); background:rgba(200,138,88,.13)}
+  .bean[aria-pressed=true] .kd{color:var(--accent)}
+
+  /* the window found from the date */
+  .window{
+    display:flex; align-items:baseline; gap:9px; flex-wrap:wrap;
+    padding:12px 14px; border-radius:12px; margin-top:14px;
+    background:rgba(200,138,88,.07); border:1px solid var(--line2);
+  }
+  .window .lbl{font-size:10px; letter-spacing:.15em; text-transform:uppercase; color:var(--accent)}
+  .window .val{font-family:"JetBrains Mono",monospace; font-size:14px}
+  .window .days{font-size:12.5px; color:var(--muted)}
+  .stale{
+    margin-top:10px; padding:11px 13px; border-radius:11px; font-size:13px; line-height:1.5;
+    background:rgba(194,114,88,.1); border:1px solid rgba(194,114,88,.4); color:#E0B9AC;
+  }
+
+  /* targets */
+  .targets{display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-top:14px}
+  .target{background:rgba(0,0,0,.24); border:1px solid var(--line); border-radius:11px; padding:9px 10px}
+  .target .k{font-size:9.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted)}
+  .target .v{
+    font-family:"JetBrains Mono",monospace; font-size:14px; margin-top:3px;
+    white-space:nowrap; letter-spacing:-.02em;
+  }
+
+  /* checklist */
+  .list{margin:0; padding:0; list-style:none}
+  .item{
+    display:flex; gap:12px; align-items:flex-start; padding:14px 0;
+    border-bottom:1px solid var(--line); cursor:pointer;
+  }
+  .item:last-child{border-bottom:0}
+  .box{
+    flex:none; width:26px; height:26px; border-radius:8px; margin-top:1px;
+    border:1.5px solid var(--line2); background:var(--field);
+    display:grid; place-items:center; transition:background .15s, border-color .15s;
+  }
+  .box svg{width:15px; height:15px; stroke:#14100E; fill:none; stroke-width:2.6; stroke-linecap:round; stroke-linejoin:round; opacity:0; transition:opacity .15s}
+  .item[aria-checked=true] .box{background:var(--good); border-color:var(--good)}
+  .item[aria-checked=true] .box svg{opacity:1}
+  .item .body{min-width:0; flex:1}
+  .item h3{font-size:15px; font-weight:500; margin:0 0 3px; display:flex; gap:8px; align-items:baseline}
+  .item h3 .num{font-family:"JetBrains Mono",monospace; font-size:11px; color:var(--dim); flex:none}
+  .item p{margin:0; font-size:13.5px; color:var(--muted); line-height:1.5}
+  .item[aria-checked=true] h3{color:var(--dim); text-decoration:line-through; text-decoration-color:var(--line2)}
+  .item[aria-checked=true] p{color:#5E5348}
+
+  /* the folded manual detail inside a step */
+  .how{margin-top:9px}
+  .how summary{
+    list-style:none; cursor:pointer; font-size:12px; letter-spacing:.09em; text-transform:uppercase;
+    color:var(--accent); display:inline-flex; align-items:center; gap:6px;
+  }
+  .how summary::-webkit-details-marker{display:none}
+  .how summary::after{content:"+"; font-family:"JetBrains Mono",monospace; font-size:14px; transition:transform .18s}
+  .how[open] summary::after{transform:rotate(45deg)}
+  .how p{margin:8px 0 0; font-size:13px; color:var(--muted); line-height:1.55}
+
+  .big{
+    width:100%; font-family:inherit; font-size:15px; font-weight:500;
+    padding:14px; border-radius:14px; border:1px solid var(--line2);
+    background:var(--accent); color:#1A120C; cursor:pointer;
+  }
+  .big:active{transform:scale(.99)}
+  .ghost{
+    width:100%; font-family:inherit; font-size:14px; padding:12px;
+    border-radius:12px; background:none; border:1px solid var(--line2); color:var(--text); cursor:pointer;
+  }
+  .ghost:active{background:rgba(200,138,88,.08)}
+  .progress{height:3px; border-radius:2px; overflow:hidden; margin-bottom:16px; background:transparent}
+  .progress[data-on=true]{background:var(--line)}
+  .progress i{display:block; height:100%; background:var(--good); transition:width .25s ease}
+  .done{text-align:center; padding:6px 0 2px}
+  .done .mark{font-size:26px; line-height:1; margin-bottom:8px}
+  .done h3{font-family:"Playfair Display",Georgia,serif; font-size:19px; margin:0 0 4px; font-weight:600}
+  .done p{margin:0; font-size:13.5px; color:var(--muted)}
+  .empty{color:var(--muted); font-size:13.5px; text-align:center; padding:6px 0; margin:0}
+  @media (prefers-reduced-motion:no-preference){
+    .pane{animation:fade .22s ease}
+    @keyframes fade{from{opacity:0; transform:translateY(4px)} to{opacity:1; transform:none}}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <div class="bar">
+      <div class="wordmark">Dial-In <span>espresso desk</span></div>
+      <div class="kit">Linea PB<br>Mazzer Major V</div>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- 1. which beans, and how old -->
+  <section class="card" id="setup">
+    <p class="eyebrow">What is on the bar</p>
+    <div class="beans" id="beans"></div>
+
+    <div>
+      <label for="roast">Roast date</label>
+      <input id="roast" type="date">
+    </div>
+    <div id="windowslot"></div>
+  </section>
+
+  <!-- 2. the card numbers for that date -->
+  <section class="card" id="cardslot" hidden></section>
+
+  <!-- 3. the checklist -->
+  <section class="card" id="steps">
+    <p class="eyebrow">Step by step</p>
+    <div id="stepbox"></div>
+  </section>
+
+  <!-- 4. how it went -->
+  <section class="card" id="shot">
+    <p class="eyebrow">How did the shot go</p>
+    <div class="targets" style="margin-top:0">
+      <div>
+        <label for="dose">Dose in</label>
+        <input id="dose" type="number" inputmode="decimal" step="0.1" min="0" placeholder="19">
+      </div>
+      <div>
+        <label for="time">Time</label>
+        <input id="time" type="number" inputmode="decimal" step="0.1" min="0" placeholder="26">
+      </div>
+      <div>
+        <label for="yield">Yield out</label>
+        <input id="yield" type="number" inputmode="decimal" step="0.1" min="0" placeholder="26">
+      </div>
+    </div>
+    <div style="margin-top:14px">
+      <label>Taste</label>
+      <div id="tastes" style="display:flex; flex-wrap:wrap; gap:8px"></div>
+    </div>
+    <div id="verdict" style="margin-top:16px"></div>
+  </section>
+
+</main>
+
+<script src="data.js"></script>
+<script src="dial.js"></script>
+<script>
+(function(){
+  "use strict";
+
+  var KEY = "dialin.v4";
+  var $ = function(s, r){ return (r || document).querySelector(s); };
+
+  var TASTES = [
+    { k:"sour", l:"Sour" }, { k:"bitter", l:"Bitter" }, { k:"watery", l:"Watery" },
+    { k:"harsh", l:"Harsh / dry" }, { k:"balanced", l:"Balanced" }
+  ];
+
+  var state = load();
+  var shot = { dose:"", time:"", yield:"", taste:[] };
+
+  function load(){
+    try{
+      var s = JSON.parse(localStorage.getItem(KEY) || "{}");
+      return {
+        bean: s.bean || "hairbender",
+        roast: s.roast || "",
+        checked: s.checked || {},
+        day: s.day || ""
+      };
+    }catch(e){ return { bean:"hairbender", roast:"", checked:{}, day:"" }; }
+  }
+  function save(){
+    try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){}
+  }
+
+  function esc(s){
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function(c){
+      return { "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c];
+    });
+  }
+  function today(){
+    var d = new Date();
+    return d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0");
+  }
+  function bean(){
+    return window.BEANS.filter(function(b){ return b.id === state.bean; })[0] || window.BEANS[0];
+  }
+  function found(){
+    var b = bean();
+    var days = window.Dial.daysSince(state.roast);
+    return { bean: b, days: days, w: window.Dial.windowFor(b, days) };
+  }
+
+  /* A checklist belongs to one bean and one roast date: change either and the
+     ticks from the last bag would be lying. */
+  function stamp(){
+    return state.bean + "|" + state.roast;
+  }
+  function checkedFor(i){
+    var k = stamp();
+    return !!(state.checked[k] && state.checked[k][i]);
+  }
+  function setChecked(i, on){
+    var k = stamp();
+    state.checked[k] = state.checked[k] || {};
+    if(on) state.checked[k][i] = true; else delete state.checked[k][i];
+    save();
+  }
+
+  /* ---------- the bean picker ---------- */
+
+  function renderBeans(){
+    $("#beans").innerHTML = window.BEANS.map(function(b){
+      return '<button class="bean" type="button" data-bean="' + b.id + '" aria-pressed="' +
+        (b.id === bean().id ? "true" : "false") + '">' +
+        '<span class="nm">' + esc(b.name) + '</span>' +
+        '<span class="kd">' + esc(b.kind) + '</span></button>';
+    }).join("");
+  }
+
+  /* ---------- the date and the window it lands in ---------- */
+
+  function renderWindow(){
+    var f = found();
+    var slot = $("#windowslot");
+
+    if(!state.roast){
+      slot.innerHTML = '<p class="hint" style="margin-top:12px">Set the roast date and the card tells you which numbers to use.</p>';
+      return;
+    }
+    if(!f.w){
+      slot.innerHTML = '<p class="hint" style="margin-top:12px">That date did not read. Try picking it again.</p>';
+      return;
+    }
+
+    var b = f.w.band, D = window.Dial;
+    slot.innerHTML =
+      '<div class="window">' +
+        '<span class="lbl">Use the card</span>' +
+        '<span class="val">' + esc(b.label) + '</span>' +
+        '<span class="days">' + f.days + (f.days === 1 ? ' day' : ' days') + ' off roast</span>' +
+      '</div>' +
+      (f.w.stale
+        ? '<div class="stale">Past 28 days. It will pour thin and blond however you grind it — open a fresh bag if you have one.</div>'
+        : "");
+  }
+
+  /* ---------- the card numbers ---------- */
+
+  function renderCard(){
+    var f = found(), slot = $("#cardslot");
+    if(!f.w){ slot.hidden = true; return; }
+    var b = f.w.band, D = window.Dial;
+    slot.hidden = false;
+    slot.innerHTML =
+      '<p class="eyebrow">' + esc(f.bean.name) + ' · ' + esc(b.label) + '</p>' +
+      '<div class="targets" style="margin-top:0">' +
+        '<div class="target"><div class="k">Dose</div><div class="v">' + D.band(b.dose) + ' g</div></div>' +
+        '<div class="target"><div class="k">Time</div><div class="v">' + D.band(b.time) + ' s</div></div>' +
+        '<div class="target"><div class="k">Yield</div><div class="v">' + D.band(b.yield) + ' g</div></div>' +
+      '</div>' +
+      '<p class="hint" style="margin-top:12px">' + b.oz + ' fl oz in the cup. These are the numbers on the ' +
+        esc(f.bean.roaster) + ' card, nothing invented.</p>';
+  }
+
+  /* ---------- the checklist ---------- */
+
+  function renderSteps(){
+    var f = found(), box = $("#stepbox");
+    if(!f.w){
+      box.innerHTML = '<p class="empty">Pick the beans and the roast date to get the steps.</p>';
+      return;
+    }
+
+    var list = window.Dial.steps(f.w.band, window.MACHINE, window.GRINDER);
+    var done = list.filter(function(s){ return checkedFor(s.n); }).length;
+    var pct = Math.round((done / list.length) * 100);
+
+    box.innerHTML =
+      '<div class="progress" data-on="' + (done > 0 ? "true" : "false") + '"><i style="width:' + pct + '%"></i></div>' +
+      '<ul class="list">' + list.map(function(s){
+        var on = checkedFor(s.n);
+        return '<li class="item" role="checkbox" tabindex="0" aria-checked="' + on + '" data-step="' + s.n + '">' +
+          '<span class="box"><svg viewBox="0 0 24 24"><path d="M4 12.5l5.5 5.5L20 6.5"/></svg></span>' +
+          '<div class="body">' +
+            '<h3><span class="num">' + s.n + '</span>' + esc(s.title) + '</h3>' +
+            '<p>' + esc(s.body) + '</p>' +
+            (s.how ? '<details class="how"><summary>The exact buttons</summary><p>' + esc(s.how) + '</p></details>' : '') +
+          '</div></li>';
+      }).join("") + '</ul>' +
+      (done === list.length
+        ? '<div class="done"><div class="mark">☕</div><h3>All six done</h3><p>Log the shot below to check it against the card.</p></div>'
+        : '<p class="hint" style="margin-top:14px">' + done + ' of ' + list.length + ' done. Tap a step to tick it off.</p>');
+  }
+
+
+  /* ---------- the shot verdict ---------- */
+
+  function renderVerdict(){
+    var f = found(), box = $("#verdict");
+    if(!f.w){ box.innerHTML = ""; return; }
+
+    var filled = shot.dose !== "" && shot.time !== "" && shot.yield !== "";
+    if(!filled && !shot.taste.length){
+      box.innerHTML = '<p class="empty">Put in the shot and the app says what to change.</p>';
+      return;
+    }
+
+    var a = window.Dial.nextAction(f.w.band, {
+      dose: shot.dose || 0, time: shot.time || 0, yield: shot.yield || 0, taste: shot.taste
+    });
+    var tone = a.grind ? "var(--grind)" : (a.title === "Dialed in" ? "var(--good)" : "var(--fix)");
+
+    box.innerHTML =
+      '<div style="border-left:3px solid ' + tone + '; padding-left:14px">' +
+        '<h3 style="font-family:Playfair Display,Georgia,serif; font-size:19px; font-weight:600; margin:0 0 6px">' +
+          esc(a.title) + '</h3>' +
+        '<p style="margin:0 0 10px; font-size:13.5px; color:var(--muted); line-height:1.55">' + esc(a.why) + '</p>' +
+        '<p style="margin:0; font-size:14px; line-height:1.5">' + esc(a.do) + '</p>' +
+      '</div>';
+  }
+
+  function renderTastes(){
+    $("#tastes").innerHTML = TASTES.map(function(t){
+      var on = shot.taste.indexOf(t.k) > -1;
+      return '<button type="button" class="ghost" data-taste="' + t.k + '" aria-pressed="' + on + '" ' +
+        'style="width:auto; padding:9px 14px; border-radius:999px; font-size:13.5px; ' +
+        (on ? 'background:rgba(200,138,88,.16); border-color:var(--accent); color:var(--text)' : 'color:var(--muted)') +
+        '">' + esc(t.l) + '</button>';
+    }).join("");
+  }
+
+  function renderAll(){
+    renderBeans();
+    $("#roast").value = state.roast;
+    renderWindow();
+    renderCard();
+    renderSteps();
+    renderVerdict();
+  }
+
+  /* ---------- events ---------- */
+
+  $("#beans").addEventListener("click", function(e){
+    var b = e.target.closest("[data-bean]");
+    if(!b) return;
+    state.bean = b.getAttribute("data-bean");
+    save();
+    renderAll();
+  });
+
+  $("#roast").addEventListener("change", function(e){
+    state.roast = e.target.value;
+    save();
+    renderAll();
+  });
+
+  $("#stepbox").addEventListener("click", function(e){
+    var li = e.target.closest(".item");
+    if(!li || e.target.closest(".how")) return;
+    var n = +li.getAttribute("data-step");
+    setChecked(n, li.getAttribute("aria-checked") !== "true");
+    renderSteps();
+  });
+
+  $("#stepbox").addEventListener("keydown", function(e){
+    if(e.key !== " " && e.key !== "Enter") return;
+    var li = e.target.closest(".item");
+    if(!li || e.target.closest(".how")) return;
+    e.preventDefault();
+    var n = +li.getAttribute("data-step");
+    setChecked(n, li.getAttribute("aria-checked") !== "true");
+    renderSteps();
+  });
+
+  ["dose","time","yield"].forEach(function(k){
+    $("#" + k).addEventListener("input", function(e){
+      shot[k] = e.target.value;
+      renderVerdict();
+    });
+  });
+
+  $("#tastes").addEventListener("click", function(e){
+    var t = e.target.closest("[data-taste]");
+    if(!t) return;
+    var k = t.getAttribute("data-taste");
+    var i = shot.taste.indexOf(k);
+    if(i > -1) shot.taste.splice(i,1); else shot.taste.push(k);
+    renderTastes();
+    renderVerdict();
+  });
+
+  /* A new day means new beans are open. Clear the ticks so yesterday's checklist
+     does not look finished. */
+  if(state.day && state.day !== today()){
+    state.checked = {};
+    state.day = today();
+    save();
+  } else if(!state.day){
+    state.day = today();
+    save();
+  }
+
+  renderAll();
+  renderTastes();
+})();
+</script>
+</body>
+</html>
