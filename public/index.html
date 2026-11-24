@@ -182,6 +182,11 @@
   .found .nm{font-size:15px; margin:0 0 2px}
   .found .cf{font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:var(--accent)}
   .found .why{font-size:13px; color:var(--muted); margin:6px 0 0; line-height:1.5}
+  .notice{
+    margin-top:12px; padding:13px 14px; border-radius:12px; font-size:13.5px; line-height:1.5;
+    background:rgba(200,138,88,.08); border:1px solid var(--line2); color:var(--muted);
+  }
+  .notice strong{display:block; color:var(--text); font-weight:500; margin-bottom:3px}
   .spinner{
     width:16px; height:16px; border:2px solid rgba(200,138,88,.3); border-top-color:var(--accent);
     border-radius:50%; display:inline-block; vertical-align:-3px; margin-right:8px;
@@ -310,6 +315,7 @@
       </div>
 
       <button class="big" id="identify" type="button" disabled>Identify</button>
+      <p class="hint" id="readby" style="margin-top:9px; text-align:center; font-size:12px"></p>
       <div id="photomsg"></div>
     </div>
 
@@ -604,7 +610,8 @@
       busy = false;
       renderThumbs();
       if(!res.ok){
-        msg('<p class="hint" style="margin-top:12px; color:var(--fix)">' + esc(res.body.message || "That did not work. Try again.") + '</p>');
+        msg('<p class="hint" style="margin-top:12px; color:var(--fix)">' +
+          esc(res.body.message || "That did not work. Try again.") + '</p>');
         return;
       }
       var found = false;
@@ -627,7 +634,15 @@
       renderVerdict();
 
       if(!found){
-        msg('<p class="hint" style="margin-top:12px">I could not place that one. Try a photo of the front of the machine, or pick it below.</p>');
+        msg('<div class="notice"><strong>Nothing I could read on that photo.</strong>' +
+          ' Get the brand name in frame — the badge on the front of the machine or the label on the grinder — and try again.' +
+          '<button class="ghost" type="button" id="tomanual" style="margin-top:10px">Pick from the lists instead</button></div>');
+        var tm = $("#tomanual");
+        if(tm) tm.addEventListener("click", function(){
+          var el = $("#machine");
+          el.scrollIntoView({ behavior:"smooth", block:"center" });
+          el.focus();
+        });
         return;
       }
       var bits = [];
@@ -637,7 +652,17 @@
       var phrase = bits.length === 1
         ? bits[0]
         : bits.slice(0, -1).join(", ") + " and " + bits[bits.length - 1];
-      msg('<p class="hint" style="margin-top:12px; color:var(--good)">Found the ' + phrase + '. Check it below.</p>');
+
+      var guessed = [res.body.machine, res.body.grinder, res.body.coffee]
+        .filter(function(x){ return x && x.id && x.guess; })
+        .map(function(x){ return x.why; });
+
+      var line = '<p class="hint" style="margin-top:12px; color:var(--good)">Found the ' + phrase + '. Check it below.</p>';
+      if(guessed.length){
+        line += '<p class="hint" style="margin-top:6px">' + esc(guessed[0]) +
+          ' It is a guess, so confirm it below.</p>';
+      }
+      msg(line);
     })
     .catch(function(){
       busy = false;
@@ -849,6 +874,13 @@
   renderChip();
   showTab(state.tab);
   wire();
+
+  // Show what the photos were read as, so a wrong match is obvious at a glance.
+  fetch("/api/health").then(function(r){ return r.json(); }).then(function(h){
+    if(!h || !h.engine) return;
+    var where = $("#readby");
+    if(where) where.textContent = h.engine === "gemini" ? "Read by Gemini" : "Read on the server";
+  }).catch(function(){});
 })();
 </script>
 </body>

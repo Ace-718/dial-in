@@ -20,6 +20,11 @@ const MACHINES = require("./catalog").MACHINES;
 const GRINDERS = require("./catalog").GRINDERS;
 const RECIPES = require("./catalog").RECIPES;
 
+/* Photo reading has two engines. Gemini reads the shape of the machine, which is
+   the good answer. If no key is configured, OCR reads the brand and model printed
+   on it, which is usually enough and needs nothing but the photo. */
+const OCR = require("./ocr");
+
 // Flash is fast and cheap and reads equipment photos well. If a name is retired
 // the request moves on to the next one rather than failing.
 const GEMINI_MODELS = (process.env.GEMINI_MODEL || "")
@@ -94,18 +99,33 @@ function knownId(list, id) {
 
 app.post("/api/identify", async (req, res) => {
   const key = process.env.GEMINI_API_KEY;
-  if (!key) {
-    return res.status(503).json({
-      error: "no-key",
-      message: "Photo recognition is not set up on this server yet."
-    });
-  }
 
   const photos = Array.isArray(req.body && req.body.photos) ? req.body.photos : [];
   const parts = photos.map(stripDataUrl).filter(Boolean).slice(0, 4);
 
   if (!parts.length) {
     return res.status(400).json({ error: "no-photo", message: "No photo came through. Try again." });
+  }
+
+  // No key: read the text off the photo instead of the shape of the machine.
+  if (!key) {
+    try {
+      const found = await OCR.identify(parts);
+      if (!found.machine && !found.grinder && !found.coffee) {
+        return res.status(200).json({
+          machine: { id: null }, grinder: { id: null }, coffee: { id: null },
+          engine: "ocr",
+          message: "I could not read a brand on that photo. Try getting the name plate in frame."
+        });
+      }
+      return res.json(Object.assign({ engine: "ocr" }, found));
+    } catch (e) {
+      console.error("ocr failed", e && e.message);
+      return res.status(502).json({
+        error: "ocr-failed",
+        message: "That photo was hard to read. Try again with the label in frame."
+      });
+    }
   }
 
   const body = {
@@ -197,7 +217,11 @@ app.post("/api/identify", async (req, res) => {
 });
 
 app.get("/api/health", (req, res) => {
-  res.json({ ok: true, photoReader: Boolean(process.env.GEMINI_API_KEY) });
+  res.json({
+    ok: true,
+    photoReader: true,
+    engine: process.env.GEMINI_API_KEY ? "gemini" : "ocr"
+  });
 });
 
 // Anything else is the page itself.

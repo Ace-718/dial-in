@@ -6,6 +6,8 @@
 window.RECIPES = [
   {
     id: "hairbender",
+    brand: "stumptown",
+    match: ["hair bender", "hairbender"],
     name: "Hair Bender",
     roaster: "Stumptown",
     kind: "Espresso",
@@ -19,6 +21,8 @@ window.RECIPES = [
   },
   {
     id: "trapper",
+    brand: "stumptown",
+    match: ["trapper creek", "trapper", "decaf"],
     name: "Trapper Creek Decaf",
     roaster: "Stumptown",
     kind: "Decaf",
@@ -34,6 +38,8 @@ window.RECIPES = [
 window.GRINDERS = [
   {
     id: "mahlkonig-e",
+    brand: "mahlkonig",
+    match: ["e65s", "e80", "supreme"],
     name: "Mahlkönig E65S / E80 Supreme",
     short: "Mahlkönig E series",
     cues: "Touchscreen, single spout, matte black or silver body, dose buttons across the front.",
@@ -48,6 +54,8 @@ window.GRINDERS = [
   },
   {
     id: "mazzer",
+    brand: "mazzer",
+    match: ["super jolly", "major", "robur"],
     name: "Mazzer Super Jolly / Major / Robur",
     short: "Mazzer",
     cues: "Tall hopper, thick stepped collar with a pin, doser or short spout.",
@@ -57,6 +65,8 @@ window.GRINDERS = [
   },
   {
     id: "eureka",
+    brand: "eureka",
+    match: ["mignon", "atom"],
     name: "Eureka Mignon / Atom",
     short: "Eureka",
     cues: "Small footprint, chrome or matte body, touchscreen on the Atom, dial under the hopper.",
@@ -70,6 +80,8 @@ window.GRINDERS = [
   },
   {
     id: "baratza",
+    brand: "baratza",
+    match: ["sette", "forte", "270"],
     name: "Baratza Sette 270 / Forte",
     short: "Baratza",
     cues: "Cone burrs, narrow body, macro ring on top and a micro ring under it.",
@@ -83,6 +95,8 @@ window.GRINDERS = [
   },
   {
     id: "niche",
+    brand: "niche",
+    match: ["zero"],
     name: "Niche Zero",
     short: "Niche",
     cues: "Round wooden base, single dosing, dial on the front with a small pointer.",
@@ -92,6 +106,7 @@ window.GRINDERS = [
   },
   {
     id: "stepless",
+    match: ["compak", "df64", "df 64"],
     name: "Stepless (Mazzer, Compak, DF64…)",
     short: "Stepless grinder",
     cues: "A collar with no pin and no click stops — it turns freely.",
@@ -104,6 +119,8 @@ window.GRINDERS = [
 window.MACHINES = [
   {
     id: "linea-mini",
+    brand: "la marzocco",
+    match: ["linea mini", "linea"],
     name: "La Marzocco Linea Mini",
     short: "Linea Mini",
     cues: "Single group, paddle on the right, cup tray on top, small drip tray.",
@@ -114,6 +131,8 @@ window.MACHINES = [
   },
   {
     id: "gs3",
+    brand: "la marzocco",
+    match: ["gs3", "gs 3"],
     name: "La Marzocco GS3",
     short: "GS3",
     cues: "Single group, volumetric buttons plus a paddle, digital display on the front.",
@@ -124,6 +143,8 @@ window.MACHINES = [
   },
   {
     id: "strada",
+    brand: "la marzocco",
+    match: ["strada", "linea pb"],
     name: "La Marzocco Strada / Linea PB",
     short: "Strada",
     cues: "Multi-group, paddle with pressure profiling, scales on the tray.",
@@ -134,6 +155,8 @@ window.MACHINES = [
   },
   {
     id: "appia",
+    brand: "nuova simonelli",
+    match: ["appia", "aurelia"],
     name: "Nuova Simonelli Appia / Aurelia",
     short: "Appia",
     cues: "Tall body, volumetric touchpad, steam wand on the right.",
@@ -144,6 +167,8 @@ window.MACHINES = [
   },
   {
     id: "black-eagle",
+    brand: "victoria arduino",
+    match: ["black eagle"],
     name: "Victoria Arduino Black Eagle",
     short: "Black Eagle",
     cues: "Sculpted body, gravimetric scale built into the tray, paddle group.",
@@ -154,6 +179,8 @@ window.MACHINES = [
   },
   {
     id: "barista-express",
+    brand: "breville",
+    match: ["barista express", "bes870"],
     name: "Breville Barista Express",
     short: "Barista Express",
     cues: "Built-in grinder on the left, single group, pressure gauge in the middle.",
@@ -164,6 +191,8 @@ window.MACHINES = [
   },
   {
     id: "dual-boiler",
+    brand: "breville",
+    match: ["dual boiler", "bes920"],
     name: "Breville Dual Boiler",
     short: "Dual Boiler",
     cues: "Two gauges, digital display, no built-in grinder.",
@@ -174,6 +203,8 @@ window.MACHINES = [
   },
   {
     id: "gaggia",
+    brand: "gaggia",
+    match: ["classic"],
     name: "Gaggia Classic",
     short: "Gaggia Classic",
     cues: "Small square body, rocker switches, single boiler.",
@@ -184,6 +215,8 @@ window.MACHINES = [
   },
   {
     id: "silvia",
+    brand: "rancilio",
+    match: ["silvia"],
     name: "Rancilio Silvia",
     short: "Silvia",
     cues: "Stainless box, two switches, single boiler, no PID.",
@@ -194,6 +227,8 @@ window.MACHINES = [
   },
   {
     id: "profitec",
+    brand: "profitec",
+    match: ["pro 600", "pro 700"],
     name: "Profitec Pro 600 / 700",
     short: "Profitec",
     cues: "Dual boiler, PID on the front, E61 group.",
@@ -204,6 +239,8 @@ window.MACHINES = [
   },
   {
     id: "bianca",
+    brand: "lelit",
+    match: ["bianca"],
     name: "Lelit Bianca",
     short: "Bianca",
     cues: "Dual boiler, wooden paddle on the group, PID on the front.",
@@ -214,6 +251,8 @@ window.MACHINES = [
   },
   {
     id: "decent",
+    brand: "decent",
+    match: ["de1", "de1pro"],
     name: "Decent DE1",
     short: "DE1",
     cues: "Tablet on top, no steam knob, small footprint.",
