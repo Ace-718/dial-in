@@ -90,10 +90,12 @@
     background:rgba(194,114,88,.1); border:1px solid rgba(194,114,88,.4); color:#E0B9AC;
   }
 
+  .grid2{display:grid; grid-template-columns:1fr 1fr; gap:10px}
   /* targets */
   .targets{display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-top:14px}
   .target{background:rgba(0,0,0,.24); border:1px solid var(--line); border-radius:11px; padding:9px 10px}
   .target .k{font-size:9.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted)}
+  .target .k.wt{text-transform:none; letter-spacing:.04em; font-family:"JetBrains Mono",monospace; font-size:11px}
   .target .v{
     font-family:"JetBrains Mono",monospace; font-size:14px; margin-top:3px;
     white-space:nowrap; letter-spacing:-.02em;
@@ -180,6 +182,12 @@
       <input id="roast" type="date">
     </div>
     <div id="windowslot"></div>
+
+    <div style="margin-top:16px; padding-top:16px; border-top:1px solid var(--line)">
+      <label for="setting">Number on the grinder now</label>
+      <input id="setting" type="number" inputmode="decimal" step="0.5" min="0" placeholder="where the ring sits">
+      <p class="hint" style="margin-top:7px; font-size:12.5px" id="settinghint"></p>
+    </div>
   </section>
 
   <!-- 2. the card numbers for that date -->
@@ -191,21 +199,27 @@
     <div id="stepbox"></div>
   </section>
 
-  <!-- 4. how it went -->
+  <!-- 4. the two dose buttons -->
+  <section class="card" id="doses">
+    <p class="eyebrow">The two dose buttons</p>
+    <div id="dosebox"></div>
+  </section>
+
+  <!-- 5. how it went -->
   <section class="card" id="shot">
     <p class="eyebrow">How did the shot go</p>
     <div class="targets" style="margin-top:0">
       <div>
         <label for="dose">Dose in</label>
-        <input id="dose" type="number" inputmode="decimal" step="0.1" min="0" placeholder="19">
+        <input id="dose" type="number" inputmode="decimal" step="0.1" min="0" placeholder="19.0">
       </div>
       <div>
-        <label for="time">Time</label>
-        <input id="time" type="number" inputmode="decimal" step="0.1" min="0" placeholder="26">
+        <label for="time">Seconds</label>
+        <input id="time" type="number" inputmode="decimal" step="0.1" min="0" placeholder="26.0">
       </div>
       <div>
         <label for="yield">Yield out</label>
-        <input id="yield" type="number" inputmode="decimal" step="0.1" min="0" placeholder="26">
+        <input id="yield" type="number" inputmode="decimal" step="0.1" min="0" placeholder="26.0">
       </div>
     </div>
     <div style="margin-top:14px">
@@ -241,12 +255,20 @@
         bean: s.bean || "hairbender",
         roast: s.roast || "",
         checked: s.checked || {},
-        day: s.day || ""
+        day: s.day || "",
+        settings: s.settings || {},
+        doseTest: s.doseTest || null
       };
-    }catch(e){ return { bean:"hairbender", roast:"", checked:{}, day:"" }; }
+    }catch(e){ return { bean:"hairbender", roast:"", checked:{}, day:"", settings:{}, doseTest:null }; }
   }
   function save(){
     try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){}
+  }
+
+  /* Each bean has its own grinder on this bar, so each keeps its own number. */
+  function settingFor(id){
+    var v = state.settings[id];
+    return v === "" || v == null ? "" : v;
   }
 
   function esc(s){
@@ -321,6 +343,40 @@
         : "");
   }
 
+  /* The grinder's numbered ring is the only dial we have, so the suggested number
+     is simply where it sits now, moved by however many marks the shot was off. */
+  function renderSetting(){
+    var cur = settingFor(bean().id);
+    var hint = $("#settinghint");
+    if(cur === ""){
+      hint.textContent = "Read the number the ring sits on with the pin tight. The app tracks each grinder separately.";
+      return;
+    }
+    var a = lastAction();
+    if(a && a.marks){
+      var next = Math.max(0, +cur + (a.grind === "finer" ? -a.marks : a.marks));
+      hint.innerHTML = "Try <strong style='color:var(--text)'>" + fmtHalf(next) + "</strong> — " +
+        a.marks + (a.marks === 1 ? " mark " : " marks ") + (a.grind === "finer" ? "finer (counterclockwise)" : "coarser (clockwise)") +
+        ". Purge two doses before the next shot.";
+    } else {
+      hint.textContent = "The number is where this bag is dialled in. Leave it while the shots land on the card.";
+    }
+  }
+
+  function fmtHalf(n){
+    return String(Math.round(n * 2) / 2);
+  }
+
+  /* The last shot's verdict, if one has been put in. */
+  function lastAction(){
+    var f = found();
+    if(!f.w) return null;
+    if(shot.dose === "" && shot.time === "" && shot.yield === "" && !shot.taste.length) return null;
+    return window.Dial.nextAction(f.w.band, {
+      dose: shot.dose || 0, time: shot.time || 0, yield: shot.yield || 0, taste: shot.taste
+    });
+  }
+
   /* ---------- the card numbers ---------- */
 
   function renderCard(){
@@ -370,6 +426,74 @@
   }
 
 
+  /* ---------- the two dose buttons ---------- */
+
+  /* The Mazzer programs a dose by TIME, not by weight, so a gram target becomes a
+     button time only once we know how fast the grinder throws grounds. Ace weighs
+     one test dose and the app does the rest. */
+  function doseTargets(){
+    var f = found();
+    if(!f.w) return null;
+    var d = window.Dial.mid(f.w.band.dose);   // 19 g for Hair Bender
+    return { double: d, single: d / 2 };
+  }
+
+  function renderDoses(){
+    var box = $("#dosebox");
+    var t = doseTargets();
+    if(!t){
+      box.innerHTML = '<p class="empty">Set the roast date and the two dose times appear here.</p>';
+      return;
+    }
+
+    var test = state.doseTest;
+
+    box.innerHTML =
+      '<p class="hint" style="margin-bottom:14px">The card wants <strong style="color:var(--text)">' +
+        window.Dial.fmt(t.double, 1) + ' g</strong> in the basket. The grinder doses by time, so weigh one ' +
+        'test dose and it will work out both button times.</p>' +
+
+      '<div class="grid2">' +
+        '<div><label for="tgrams">Test dose weight</label>' +
+          '<input id="tgrams" type="number" inputmode="decimal" step="0.1" min="0" placeholder="e.g. 19.4" value="' +
+          (test ? esc(test.grams) : '') + '"></div>' +
+        '<div><label for="tsecs">Time it took</label>' +
+          '<input id="tsecs" type="number" inputmode="decimal" step="0.1" min="0" placeholder="e.g. 5.2" value="' +
+          (test ? esc(test.seconds) : '') + '"></div>' +
+      '</div>' +
+      '<div id="doseanswer"></div>';
+
+    paintDoses(t);
+  }
+
+  /* Only the answer is repainted while Ace types, so the field keeps focus. */
+  function paintDoses(t){
+    var test = state.doseTest;
+    var times = test ? window.Dial.doseTimes(+test.seconds, +test.grams, t.double) : null;
+    var dbl = times ? Math.round(times.double * 10) / 10 : null;
+    var sgl = times ? Math.round(times.single * 10) / 10 : null;
+
+    $("#doseanswer").innerHTML = times
+      ? '<div class="targets" style="margin-top:14px; grid-template-columns:1fr 1fr">' +
+          '<div class="target"><div class="k">1 shot</div><div class="v">' + sgl + ' s</div>' +
+            '<div class="k wt" style="margin-top:6px">≈ ' + window.Dial.fmt(t.single, 1) + ' g</div></div>' +
+          '<div class="target"><div class="k">2 shot</div><div class="v">' + dbl + ' s</div>' +
+            '<div class="k wt" style="margin-top:6px">≈ ' + window.Dial.fmt(t.double, 1) + ' g</div></div>' +
+        '</div>' +
+        '<p class="hint" style="margin-top:10px">Grinder throws ' + window.Dial.fmt(times.gps, 2) +
+          ' g a second, so these times follow from your test dose.</p>' +
+        '<div class="how" style="margin-top:14px"><details><summary>How to set each button</summary>' +
+          '<p><strong style="color:var(--text)">1 shot button, the half dose:</strong> press and hold the menu button, ' +
+          'then press the 1-shot dose button and release both. The display shows that dose and its time. ' +
+          'Set it to ' + sgl + ' s with the navigation buttons, then press and release the menu button to save.</p>' +
+          '<p><strong style="color:var(--text)">2 shot button, the full ' + window.Dial.fmt(t.double, 1) + ' g:</strong> ' +
+          'hold the menu button, press the 2-shot dose button, release both, set it to ' + dbl + ' s, ' +
+          'then press the menu button to save.</p>' +
+          '<p>The two buttons save separately, so setting one does not move the other. Purge two doses after any change.</p>' +
+        '</details></div>'
+      : '<p class="hint" style="margin-top:12px">Weigh one dose on the scale, note the seconds the button ran, and the two times appear here.</p>';
+  }
+
   /* ---------- the shot verdict ---------- */
 
   function renderVerdict(){
@@ -409,9 +533,12 @@
   function renderAll(){
     renderBeans();
     $("#roast").value = state.roast;
+    $("#setting").value = settingFor(bean().id);
     renderWindow();
+    renderSetting();
     renderCard();
     renderSteps();
+    renderDoses();
     renderVerdict();
   }
 
@@ -423,12 +550,19 @@
     state.bean = b.getAttribute("data-bean");
     save();
     renderAll();
+    renderDoses();
   });
 
   $("#roast").addEventListener("change", function(e){
     state.roast = e.target.value;
     save();
     renderAll();
+  });
+
+  $("#setting").addEventListener("input", function(e){
+    state.settings[bean().id] = e.target.value === "" ? "" : +e.target.value;
+    save();
+    renderSetting();
   });
 
   $("#stepbox").addEventListener("click", function(e){
@@ -453,7 +587,20 @@
     $("#" + k).addEventListener("input", function(e){
       shot[k] = e.target.value;
       renderVerdict();
+      renderSetting();
     });
+  });
+
+  $("#dosebox").addEventListener("input", function(e){
+    var id = e.target.id;
+    if(id !== "tgrams" && id !== "tsecs") return;
+    state.doseTest = {
+      grams: ($("#tgrams").value || ""),
+      seconds: ($("#tsecs").value || "")
+    };
+    save();
+    var t = doseTargets();
+    if(t && $("#doseanswer")) paintDoses(t);
   });
 
   $("#tastes").addEventListener("click", function(e){
@@ -464,6 +611,7 @@
     if(i > -1) shot.taste.splice(i,1); else shot.taste.push(k);
     renderTastes();
     renderVerdict();
+    renderSetting();
   });
 
   /* A new day means new beans are open. Clear the ticks so yesterday's checklist

@@ -63,6 +63,25 @@
     return "well";
   }
 
+  /* A mark on the numbered ring does not move the shot time by a fixed amount — it
+     depends on the coffee and where the burrs already are — so the honest advice is
+     always one mark, then re-taste. `far` only changes how strongly it is worded. */
+  function marks() {
+    return 1;
+  }
+
+  /* The grinder doses by time, so a target weight becomes a button time only once
+     you know how fast it throws grounds. */
+  function doseTimes(seconds, grams, doubleTarget) {
+    if (!(seconds > 0) || !(grams > 0)) return null;
+    var gps = grams / seconds;
+    return {
+      gps: gps,
+      double: doubleTarget / gps,
+      single: (doubleTarget / 2) / gps
+    };
+  }
+
   function check(key, label, value, target, slack, unit) {
     var ok = inBand(value, target, slack);
     return {
@@ -114,8 +133,10 @@
         why: "The shot ran " + fmt(time.value, 1) + " s — " + time.far + " " +
              (time.dir === "low" ? "under" : "over") + " the card's " + band(b.time) + " s. " +
              "Finer slows the shot, coarser speeds it up.",
-        do: "Loosen the pin, turn the disk counterclockwise a little, tighten the pin. Purge two doses, then pull one shot and time it.",
-        grind: dir
+        do: "Loosen the pin, turn the disk one mark " + (dir === "finer" ? "counterclockwise" : "clockwise") +
+            ", tighten the pin. Purge two doses, then pull one shot and time it.",
+        grind: dir,
+        marks: 1
       };
     }
 
@@ -137,16 +158,18 @@
       return {
         title: "Numbers right, still sour",
         why: "Everything is on the card but it tastes sour, so it wants a touch more extraction.",
-        do: "Grind one small step finer, purge two doses, and taste again.",
-        grind: "finer"
+        do: "Grind one mark finer, purge two doses, and taste again.",
+        grind: "finer",
+        marks: 1
       };
     }
     if (has("bitter")) {
       return {
         title: "Numbers right, still bitter",
         why: "Everything is on the card but the finish is bitter, so it is extracting too much.",
-        do: "Grind one small step coarser, purge two doses, and taste again.",
-        grind: "coarser"
+        do: "Grind one mark coarser, purge two doses, and taste again.",
+        grind: "coarser",
+        marks: 1
       };
     }
     if (has("watery")) {
@@ -216,6 +239,8 @@
     mid: mid,
     fmt: fmt,
     check: check,
+    marks: marks,
+    doseTimes: doseTimes,
     nextAction: nextAction,
     steps: steps
   };
